@@ -1,6 +1,7 @@
-# telegram-cli
+# tg-cli
 
 [![CI](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/tg-cli.svg)](https://pypi.org/project/tg-cli/)
 
 Standalone Telegram command-line client. Connects directly to Telegram via
 [Telethon](https://github.com/LonamiWebs/Telethon) (MTProto userbot) — **no MCP,
@@ -23,7 +24,11 @@ no daemon, no external service**. Everything the CLI does lives in the CLI.
 Requires Python >= 3.10 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
-git clone https://github.com/<user>/telegram-cli.git
+# from PyPI
+uv tool install tg-cli          # or: pipx install tg-cli
+
+# from source (development)
+git clone https://github.com/noexcs/telegram-cli.git
 cd telegram-cli
 uv tool install -e .
 ```

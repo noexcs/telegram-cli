@@ -3,9 +3,9 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "telegram-cli"
+name = "tg-cli"
 version = "0.1.0"
-description = "Standalone Telegram command-line client (direct Telethon connection, no MCP dependency)"
+description = "Full-featured Telegram command-line client powered by a Telethon userbot (your own account, not a bot token)"
 readme = "README.md"
 license = "Apache-2.0"
 requires-python = ">=3.10"

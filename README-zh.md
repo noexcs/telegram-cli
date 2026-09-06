@@ -1,6 +1,7 @@
-# telegram-cli
+# tg-cli
 
 [![CI](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/tg-cli.svg)](https://pypi.org/project/tg-cli/)
 
 独立 Telegram 命令行客户端。通过 [Telethon](https://github.com/LonamiWebs/Telethon)
 （MTProto userbot）直连 Telegram —— **不依赖 MCP、不依赖守护进程、不依赖任何外部服务**，
@@ -22,7 +23,11 @@
 需要 Python >= 3.10 与 [uv](https://docs.astral.sh/uv/)。
 
 ```bash
-git clone https://github.com/<user>/telegram-cli.git
+# 从 PyPI 安装
+uv tool install tg-cli          # 或 pipx install tg-cli
+
+# 从源码安装（开发）
+git clone https://github.com/noexcs/telegram-cli.git
 cd telegram-cli
 uv tool install -e .
 ```

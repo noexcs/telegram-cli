@@ -16,18 +16,13 @@ jobs:
       - name: Build package
         run: uv build
 
-      # PyPI publishing is prepared but disabled until the PyPI project is
-      # set up (the "telegram-cli" name may be taken). Two options:
-      #   1. Trusted Publishing (no secrets needed):
-      #      configure the project on PyPI (Publishing → Trusted Publisher)
-      #      and uncomment:
-      #      - uses: pypa/gh-action-pypi-publish@release/v1
-      #        with: { packages-dir: dist/ }
-      #   2. API token: add a PYPI_TOKEN secret and uncomment the step below.
-      # - name: Publish to PyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     password: ${{ secrets.PYPI_TOKEN }}
+      # Requires PyPI Trusted Publishing to be configured once:
+      # PyPI project "tg-cli" → Publishing → Add Trusted Publisher →
+      # owner=noexcs, repository=telegram-cli, workflow=release.yml.
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
 
       - name: GitHub Release
         uses: softprops/action-gh-release@v2
