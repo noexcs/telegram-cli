@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "telegram-cli"
+version = "0.1.0"
+description = "Standalone Telegram command-line client (direct Telethon connection, no MCP dependency)"
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.10"
+dependencies = [
+    "telethon>=1.44,<2",
+    "python-dotenv>=1.0",
+    "python-socks[asyncio]>=2.4",
+    "qrcode>=8.0",
+]
+
+[project.scripts]
+tg = "tgcli.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tgcli"]
