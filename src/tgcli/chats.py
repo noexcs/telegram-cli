@@ -32,20 +32,22 @@ async def cmd_chats(args) -> None:
                 continue
             rows.append((d, kind, name, uname))
         if args.json:
-            print(json_pp(
-                [
-                    {
-                        "id": d.id,
-                        "name": name,
-                        "username": uname,
-                        "type": kind,
-                        "unread": d.unread_count,
-                        "muted": muted_of(d),
-                        "archived": d.archived,
-                    }
-                    for d, kind, name, uname in rows
-                ]
-            ))
+            print(
+                json_pp(
+                    [
+                        {
+                            "id": d.id,
+                            "name": name,
+                            "username": uname,
+                            "type": kind,
+                            "unread": d.unread_count,
+                            "muted": muted_of(d),
+                            "archived": d.archived,
+                        }
+                        for d, kind, name, uname in rows
+                    ]
+                )
+            )
             return
         if not rows:
             print("(no chats matched)")
@@ -167,9 +169,7 @@ async def cmd_profile(args) -> None:
         if args.name:
             first, _, last = args.name.partition(" ")
             await client(
-                functions.account.UpdateProfileRequest(
-                    first_name=first, last_name=last or ""
-                )
+                functions.account.UpdateProfileRequest(first_name=first, last_name=last or "")
             )
         if args.bio:
             await client(functions.account.UpdateProfileRequest(about=args.bio))
@@ -185,7 +185,9 @@ def setup(subparsers, common=None) -> None:
     sp = subparsers.add_parser("me", parents=parents, help="Show your account info")
     sp.set_defaults(func=cmd_me)
 
-    sp = subparsers.add_parser("chats", parents=parents, help="List dialogs (optional keyword filter)")
+    sp = subparsers.add_parser(
+        "chats", parents=parents, help="List dialogs (optional keyword filter)"
+    )
     sp.add_argument("query", nargs="?", default=None, help="filter by name/username")
     sp.add_argument("-n", "--limit", type=int, default=20)
     sp.add_argument("-t", "--type", choices=["user", "group", "channel"])
@@ -193,7 +195,9 @@ def setup(subparsers, common=None) -> None:
     sp.add_argument("--archived", action="store_true", default=None, help="archived only")
     sp.set_defaults(func=cmd_chats)
 
-    sp = subparsers.add_parser("hist", parents=parents, help='Show recent messages, e.g. tg hist "Music Bot" 10')
+    sp = subparsers.add_parser(
+        "hist", parents=parents, help='Show recent messages, e.g. tg hist "Music Bot" 10'
+    )
     sp.add_argument("chat")
     sp.add_argument("n", nargs="?", type=int, default=10, help="count (default 10)")
     sp.set_defaults(func=cmd_hist)
@@ -216,7 +220,9 @@ def setup(subparsers, common=None) -> None:
     sp = subparsers.add_parser("contacts", parents=parents, help="List contacts")
     sp.set_defaults(func=cmd_contacts)
 
-    sp = subparsers.add_parser("profile", parents=parents, help="Update your profile (name / bio / photo)")
+    sp = subparsers.add_parser(
+        "profile", parents=parents, help="Update your profile (name / bio / photo)"
+    )
     sp.add_argument("--name", default=None, help='first and last name, e.g. "John Doe"')
     sp.add_argument("--bio", default=None)
     sp.add_argument("--photo", default=None, help="path to an image")

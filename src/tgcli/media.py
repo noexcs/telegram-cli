@@ -64,14 +64,22 @@ async def cmd_voice(args) -> None:
 
 def setup(subparsers, common=None) -> None:
     parents = [common] if common else []
-    sp = subparsers.add_parser("dl", parents=parents, help="Download media, e.g. tg dl 7381828427 785")
+    sp = subparsers.add_parser(
+        "dl", parents=parents, help="Download media, e.g. tg dl 7381828427 785"
+    )
     sp.add_argument("chat")
     sp.add_argument("msg_id", type=int)
-    sp.add_argument("-o", "--out", default=None,
-                    help="output path (default ~/Downloads/telegram_<chat>_<msgid>)")
+    sp.add_argument(
+        "-o",
+        "--out",
+        default=None,
+        help="output path (default ~/Downloads/telegram_<chat>_<msgid>)",
+    )
     sp.set_defaults(func=cmd_dl)
 
-    sp = subparsers.add_parser("sf", parents=parents, help="Send files (2-10 files become an album)")
+    sp = subparsers.add_parser(
+        "sf", parents=parents, help="Send files (2-10 files become an album)"
+    )
     sp.add_argument("chat")
     sp.add_argument("files", nargs="+")
     sp.add_argument("-c", "--caption", default=None)

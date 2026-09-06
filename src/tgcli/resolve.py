@@ -18,7 +18,9 @@ def _load_aliases() -> dict:
 
 def _save_aliases(aliases: dict) -> None:
     _ALIAS_FILE.parent.mkdir(parents=True, exist_ok=True)
-    _ALIAS_FILE.write_text(json.dumps(aliases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    _ALIAS_FILE.write_text(
+        json.dumps(aliases, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
 
 
 async def resolve_chat(client, spec: str):
@@ -60,11 +62,14 @@ async def resolve_chat(client, spec: str):
         return exact[0].input_entity
     if len(hits) > 1:
         ids = ", ".join(str(d.id) for d in hits[:5])
-        raise TgError(f"'{spec}' matches multiple chats [{ids}]; use a more precise name or numeric id")
+        raise TgError(
+            f"'{spec}' matches multiple chats [{ids}]; use a more precise name or numeric id"
+        )
     return hits[0].input_entity
 
 
 # ---- alias subcommands (stretch) ----
+
 
 async def cmd_alias_set(args) -> None:
     aliases = _load_aliases()
@@ -93,8 +98,9 @@ async def cmd_alias_rm(args) -> None:
 
 def setup_alias(subparsers, common=None) -> None:
     parents = [common] if common else []
-    sp = subparsers.add_parser("alias", parents=parents,
-                               help="Manage chat aliases (local shortcuts)")
+    sp = subparsers.add_parser(
+        "alias", parents=parents, help="Manage chat aliases (local shortcuts)"
+    )
     sub = sp.add_subparsers(dest="alias_cmd", required=True)
     s1 = sub.add_parser("set", help="alias set NAME TARGET")
     s1.add_argument("name")

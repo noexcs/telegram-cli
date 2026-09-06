@@ -2,7 +2,7 @@
 
 import contextlib
 import os
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 
 from telethon import TelegramClient
 from telethon.sessions import StringSession

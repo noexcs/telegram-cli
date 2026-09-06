@@ -1,10 +1,12 @@
 # telegram-cli
 
+[![CI](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml)
+
 Standalone Telegram command-line client. Connects directly to Telegram via
 [Telethon](https://github.com/LonamiWebs/Telethon) (MTProto userbot) — **no MCP,
 no daemon, no external service**. Everything the CLI does lives in the CLI.
 
-[中文说明](README-zh.md)
+[中文说明](README-zh.md) · [Roadmap](ROADMAP.md)
 
 ## Features
 
@@ -95,7 +97,8 @@ Exit codes: `0` ok, `1` command error, `2` config/connection/session error,
 
 ## Roadmap
 
-- v2: voice transcription, multi-account, group admin commands, more filters
+See [ROADMAP.md](ROADMAP.md) for the full plan (messaging enhancements, chat &
+group management, contacts, folders, multi-account, voice transcription).
 
 ## License & acknowledgments
 

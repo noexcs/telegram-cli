@@ -1,10 +1,12 @@
 # telegram-cli
 
+[![CI](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml)
+
 独立 Telegram 命令行客户端。通过 [Telethon](https://github.com/LonamiWebs/Telethon)
 （MTProto userbot）直连 Telegram —— **不依赖 MCP、不依赖守护进程、不依赖任何外部服务**，
 所有功能都在 CLI 内完成。
 
-[English](README.md)
+[English](README.md) · [Roadmap](ROADMAP.md)
 
 ## 特性
 
@@ -89,7 +91,8 @@ tg logout          # 退出登录并删除会话
 
 ## 路线图
 
-- v2：语音转文字、多账号、群管理命令、更多过滤器
+完整规划见 [ROADMAP.md](ROADMAP.md)（消息增强、聊天与群管理、联系人、
+文件夹、多账号、语音转文字）。
 
 ## 协议与致谢
 

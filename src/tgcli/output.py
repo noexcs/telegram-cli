@@ -1,5 +1,6 @@
 """Shared output helpers: errors, JSON pretty-print, row formatters."""
 
+import contextlib
 import json
 from datetime import datetime
 from typing import Any
@@ -31,18 +32,6 @@ def fmt_date(dt: Any) -> str:
     return dt.astimezone().strftime("%Y-%m-%d %H:%M")
 
 
-def fmt_chat_row(chat: Any) -> str:
-    name = getattr(chat, "title", None) or getattr(chat, "first_name", None) or ""
-    uname = getattr(chat, "username", None)
-    unread = getattr(chat, "dialog", None)
-    unread_n = unread.unread_count if unread else 0
-    muted = unread.unread_mark if unread else False
-    mark = "M" if muted else " "
-    unread_s = f"({unread_n})" if unread_n else ""
-    kind = type(chat).__name__.replace("Channel", "channel").replace("Chat", "group").replace("User", "user")
-    return f"{kind:<8} {chat.id:>14} {mark}{unread_s:<5} {name} {'@' + uname if uname else ''}"
-
-
 def fmt_message_row(msg: Any) -> str:
     if msg.text:
         body = " ".join(msg.text.split())[:200]
@@ -51,9 +40,7 @@ def fmt_message_row(msg: Any) -> str:
     else:
         body = "[empty]"
     sender = getattr(msg, "sender_id", None) or "?"
-    try:
+    with contextlib.suppress(Exception):
         sender = msg.sender.first_name if msg.sender else sender
-    except Exception:
-        pass
     out_mark = ">" if msg.out else " "
     return f"[{msg.id}] {fmt_date(msg.date)} {out_mark}{sender}: {body}"
