@@ -12,9 +12,14 @@ no daemon, no external service**. Everything the CLI does lives in the CLI.
 ## Features
 
 - QR-code login (`tg login --qr`) with an independent session
-- Messaging: send / reply / edit / delete / forward / polls
-- Chats: list dialogs, history, pinned messages, in-chat & global search
-- Media: download, send files / albums, voice notes
+- Messaging: send / reply / edit / delete / forward / polls / schedule /
+  drafts / reactions / pinning
+- Chat management: archive, mute, edit title / description / photo,
+  invite links, clear history
+- Media: download, send files / albums / voice notes / stickers / GIFs,
+  contact cards
+- Chats: list dialogs, history, pinned messages, in-chat & global search,
+  online status, common chats
 - Contacts & profile management
 - Chat resolution by name fuzzy match, `@username`, numeric id, or `me`
   (Saved Messages), plus local aliases
@@ -66,6 +71,8 @@ tg logout          # remove the session
 
 ## Commands
 
+### Core
+
 | Command | Description |
 |---|---|
 | `tg me` | Show your account info |
@@ -86,6 +93,34 @@ tg logout          # remove the session
 | `tg poll <chat> "<question>" <opts...>` | Create a poll; `--multiple/--quiz/--public` |
 | `tg profile --name/--bio/--photo` | Update your profile |
 | `tg alias set/list/rm` | Local chat aliases (`~/.config/tg/aliases.json`) |
+
+### Messaging & chat management (v2)
+
+| Command | Description |
+|---|---|
+| `tg schedule <chat> <time> <text...>` | Schedule a message; time is `+30m`/`+2h`/`+1d`, `2026-09-07 14:30`, or a unix ts |
+| `tg scheduled <chat>` | List scheduled messages (`--json` supported) |
+| `tg unschedule <chat> <ids...>` | Delete scheduled messages |
+| `tg draft <chat> [text]` | Save a draft (with text) or show the current draft |
+| `tg draft-clear <chat>` | Clear the draft |
+| `tg react <chat> <msg_id> <emoji>` | React to a message; `--big` for the big animation |
+| `tg unreact <chat> <msg_id>` | Remove your reaction |
+| `tg pin <chat> <msg_id>` / `tg unpin <chat> [msg_id]` | Pin / unpin (no id = unpin all) |
+| `tg read <chat>` | Mark the chat as read (also clears mention badges) |
+| `tg msg-link <chat> <msg_id>` | Export a t.me message link (channels/supergroups only) |
+| `tg contact-card <chat> "<name>" <phone>` | Send a contact card |
+| `tg sticker <chat> <file>` | Send a sticker file (`.webp` / `.tgs` / `.webm`) |
+| `tg gif <chat> <query>` | Search GIFs and send the first match; `-n N` sends the Nth |
+| `tg archive <chat>` / `tg unarchive <chat>` | Archive / unarchive a dialog |
+| `tg mute <chat> [hours]` / `tg unmute <chat>` | Mute notifications (permanent unless hours given) / unmute |
+| `tg chat-title <chat> <title>` | Change group/channel title |
+| `tg chat-about <chat> <text>` | Change chat description |
+| `tg chat-photo <chat> <file>` | Change the chat photo |
+| `tg invite-link <chat>` | Export a chat invite link |
+| `tg join <link>` | Join via `t.me/+hash`, `t.me/joinchat/…`, or `t.me/<username>` |
+| `tg clear-history <chat>` | Delete all messages (both sides; `--self-only` keeps the other copy) |
+| `tg status <user>` | Show a user's online status |
+| `tg common-chats <user>` | List chats you share with a user |
 
 Global flags: `--account` (v1: default only), `--json` (raw JSON output).
 Exit codes: `0` ok, `1` command error, `2` config/connection/session error,

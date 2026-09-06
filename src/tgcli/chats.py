@@ -1,5 +1,7 @@
 """Chat / search / contacts / profile commands."""
 
+from datetime import datetime
+
 from telethon import functions, types
 
 from .client import run_with_client
@@ -70,7 +72,11 @@ def muted_of(d) -> bool:
     # The custom Dialog wrapper drops the mute state; read it from the raw dialog.
     notify = getattr(getattr(d, "dialog", None), "notify_settings", None)
     mute_until = getattr(notify, "mute_until", None)
-    return bool(mute_until)
+    if not mute_until:
+        return False
+    # an unmuted chat sends mute_until=0, which telethon deserializes as
+    # datetime(1970, ...) — truthy but in the past, i.e. not muted
+    return mute_until > datetime.now(mute_until.tzinfo)
 
 
 async def cmd_hist(args) -> None:

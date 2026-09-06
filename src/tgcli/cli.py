@@ -6,7 +6,7 @@ import sys
 
 from telethon import errors
 
-from . import __version__, auth, chats, media, messages, resolve
+from . import __version__, auth, chats, dialogs, media, messages, resolve
 from .output import TgError
 
 
@@ -41,7 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp2 = sub.add_parser("logout", parents=[common], help="Log out and remove the session")
     sp2.set_defaults(func=auth.cmd_logout)
 
-    for mod in (messages, chats, media):
+    for mod in (messages, chats, media, dialogs):
         mod.setup(sub, common)
 
     resolve.setup_alias(sub, common)

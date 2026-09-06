@@ -4,34 +4,38 @@ The v1 release covers the core daily workflow. The goal is full coverage of
 the Telegram feature surface reachable from a userbot, roughly matching the
 126-tool scope of [chigwell/telegram-mcp](https://github.com/chigwell/telegram-mcp).
 
-Status legend: ✅ done (v1) · 🚧 planned · ❌ deliberately out of scope.
+Status legend: ✅ done · 🚧 planned · ❌ deliberately out of scope.
 
 ## Milestones
 
-### v2 — Messaging enhancements & chat management
+### v2 — Messaging enhancements & chat management (shipped)
 
 Messaging:
 
-- 🚧 `schedule <chat> <time> <text...>` — send scheduled messages
+- ✅ `schedule <chat> <time> <text...>` — send scheduled messages
   (`send_message(..., schedule=...)`), list/delete scheduled
-- 🚧 `draft <chat> [text]` / `draft-clear <chat>` — save/get/clear drafts
-- 🚧 `react <chat> <msg_id> <emoji>` / `unreact` — send/remove reactions
-- 🚧 `sticker <chat> <file.webp>` — send stickers (telethon handles via `send_file`)
-- 🚧 `gif <chat> <query>` — search GIFs and send
-- 🚧 `contact-card <chat> <name> <phone>` — send a contact card
-- 🚧 `pin <chat> <msg_id>` / `unpin <chat> [msg_id]` — pin/unpin messages
-- 🚧 `read <chat>` — mark a chat as read
-- 🚧 `msg-link <chat> <msg_id>` — export a t.me message link (channels/supergroups)
+  (`scheduled <chat>` / `unschedule <chat> <ids...>`)
+- ✅ `draft <chat> [text]` / `draft-clear <chat>` — save/get/clear drafts
+- ✅ `react <chat> <msg_id> <emoji>` / `unreact` — send/remove reactions
+  (note: reacting to Saved Messages is premium-only on Telegram's side)
+- ✅ `sticker <chat> <file.webp>` — send stickers (telethon handles via `send_file`)
+- ✅ `gif <chat> <query>` — search GIFs (inline query to the built-in @gif bot;
+  `messages.searchGifs` was removed from the TL layer) and send
+- ✅ `contact-card <chat> <name> <phone>` — send a contact card
+- ✅ `pin <chat> <msg_id>` / `unpin <chat> [msg_id]` — pin/unpin messages
+- ✅ `read <chat>` — mark a chat as read
+- ✅ `msg-link <chat> <msg_id>` — export a t.me message link (channels/supergroups)
 
 Chat management:
 
-- 🚧 `archive <chat>` / `unarchive <chat>` — archive/unarchive dialogs
-- 🚧 `mute <chat> [hours]` / `unmute <chat>` — mute/unmute notifications
-- 🚧 `chat-title <chat> <title>` / `chat-about <chat> <text>` /
+- ✅ `archive <chat>` / `unarchive <chat>` — archive/unarchive dialogs
+- ✅ `mute <chat> [hours]` / `unmute <chat>` — mute/unmute notifications
+- ✅ `chat-title <chat> <title>` / `chat-about <chat> <text>` /
   `chat-photo <chat> <file>` — edit chat info
-- 🚧 `invite-link <chat>` / `join <link>` — export/import invite links
-- 🚧 `clear-history <chat>` — delete all messages in a chat
-- 🚧 `status <user>` / `common-chats <user>` — online status, common chats
+- ✅ `invite-link <chat>` / `join <link>` — export/import invite links
+- ✅ `clear-history <chat>` — delete all messages in a chat (`--self-only` to
+  keep the other side's copy)
+- ✅ `status <user>` / `common-chats <user>` — online status, common chats
 
 ### v3 — Group administration
 

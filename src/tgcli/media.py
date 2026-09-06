@@ -1,7 +1,9 @@
-"""Media commands: dl (download), sf (send file/album), voice."""
+"""Media commands: dl (download), sf (send file/album), voice, sticker, gif."""
 
 import os
 import re
+
+from telethon import functions
 
 from .client import run_with_client
 from .output import TgError
@@ -62,6 +64,34 @@ async def cmd_voice(args) -> None:
         print("Voice note sent")
 
 
+async def cmd_sticker(args) -> None:
+    path = os.path.expanduser(args.file)
+    if not os.path.exists(path):
+        raise TgError(f"file not found: {path}")
+    async with run_with_client(args) as client:
+        entity = await resolve_chat(client, args.chat)
+        await client.send_file(entity, path, force_document=False)
+        print("Sticker sent")
+
+
+async def cmd_gif(args) -> None:
+    async with run_with_client(args) as client:
+        entity = await resolve_chat(client, args.chat)
+        # GIF search = inline query to the built-in @gif bot (searchGifs was
+        # removed from the TL layer; this is what official clients use)
+        res = await client(
+            functions.messages.GetInlineBotResultsRequest(
+                bot="gif", peer=entity, query=args.query, offset=""
+            )
+        )
+        docs = [r.document for r in res.results if getattr(r, "document", None) is not None]
+        if not docs:
+            raise TgError(f"no GIFs found for {args.query!r}")
+        idx = min(max(args.index, 1), len(docs)) - 1
+        await client.send_file(entity, docs[idx])
+        print(f"GIF sent (match {idx + 1} of {len(docs)} for {args.query!r})")
+
+
 def setup(subparsers, common=None) -> None:
     parents = [common] if common else []
     sp = subparsers.add_parser(
@@ -89,3 +119,16 @@ def setup(subparsers, common=None) -> None:
     sp.add_argument("chat")
     sp.add_argument("file")
     sp.set_defaults(func=cmd_voice)
+
+    sp = subparsers.add_parser(
+        "sticker", parents=parents, help="Send a sticker file (.webp / .tgs / .webm)"
+    )
+    sp.add_argument("chat")
+    sp.add_argument("file")
+    sp.set_defaults(func=cmd_sticker)
+
+    sp = subparsers.add_parser("gif", parents=parents, help="Search GIFs and send the first match")
+    sp.add_argument("chat")
+    sp.add_argument("query")
+    sp.add_argument("-n", "--index", type=int, default=1, help="send the Nth match (default 1)")
+    sp.set_defaults(func=cmd_gif)
