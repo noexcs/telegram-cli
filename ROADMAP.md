@@ -55,19 +55,26 @@ Chat management:
   (list/create)
 - ✅ `admin-log <chat>` — recent admin actions
 
-### v4 — Contacts, profile & misc
+### v4 — Contacts, profile & misc (shipped)
 
-- 🚧 `contact add/del` — add/delete contacts
-- 🚧 `contact import <file>` / `contact export` — bulk import/export
-- 🚧 `photo-del` — delete profile photo
-- 🚧 `privacy get/set` — privacy settings (last seen, phone, …)
-- 🚧 `block <user>` / `unblock <user>` / `blocked` — block management
-- 🚧 `folder ...` — dialog folders (create/assign/reorder)
-- 🚧 `accounts` — multi-account support (the `--account` hook already exists;
-  v1 resolves the default account only)
-- 🚧 `vtr <chat> <msg_id>` — voice transcription. telethon 1.44 has no
-  transcribe support; options: Groq HTTP API, or raw
-  `messages.transcribeAudio` TL (Telegram Premium)
+- ✅ `contact add/del` — add/delete contacts (`contact del` also matches `+phone`)
+- ✅ `contact import <file>` / `contact export` — bulk JSON/CSV import,
+  re-importable JSON export (note: Telegram no longer creates contacts for
+  unregistered numbers — unmatched imports return 0)
+- ✅ `photo-del` — delete the most recent profile photo (`--all` for all)
+- ✅ `privacy get/set` — 11 keys (lastseen, phone, calls, p2p, groups, photo,
+  forwards, voicemail, about, birthday, addedby); set rules must use the
+  `InputPrivacyValue*` classes — the output `PrivacyValue*` classes are
+  silently ignored by the server
+- ✅ `block <user>` / `unblock <user>` / `blocked` — block management
+- ✅ `folders` / `folder-create` / `folder-assign` / `folder-del` /
+  `folder-order` — dialog folders (list/create/assign/reorder)
+- ✅ `accounts` — multi-account support (`accounts` lists every
+  `TELEGRAM_SESSION_STRING*`; `login --account LABEL` and
+  `<command> --account LABEL` both work)
+- ✅ `vtr <chat> <msg_id>` — voice transcription via raw
+  `messages.TranscribeAudioRequest` (telethon has no wrapper). Telegram
+  Premium is required server-side; free accounts get a clean error
 
 ### Out of scope
 

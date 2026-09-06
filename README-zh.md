@@ -15,6 +15,7 @@
 - 消息：发送 / 引用回复 / 编辑 / 删除 / 转发 / 投票 / 定时 / 草稿 / 表情回应 / 置顶
 - 群组管理：建群 / 建频道、邀请 / 踢人 / 封禁、管理员升降级（细粒度权限）、慢速模式、论坛话题、管理日志
 - 聊天管理：归档、免打扰、修改群名 / 简介 / 群头像、邀请链接、清空历史
+- 联系人、隐私设置、封锁管理、会话文件夹、多账号、语音转写
 - 媒体：下载、发文件 / 相册 / 语音条 / 贴纸 / GIF、发送名片
 - 聊天：会话列表、历史记录、置顶消息、会话内与全局搜索、在线状态、共同群组
 - 联系人与个人资料管理
@@ -135,6 +136,27 @@ tg logout          # 退出登录并删除会话
 | `tg topics <会话>` | 列出论坛话题 |
 | `tg topic-create <会话> <标题> [首条消息]` | 创建论坛话题 |
 | `tg admin-log <会话> [-n]` | 近期管理操作日志 |
+
+### 联系人、隐私与其他（v4）
+
+| 命令 | 说明 |
+|---|---|
+| `tg contact add <用户> [姓名] [--phone]` | 新增/更新联系人 |
+| `tg contact del <用户...>` | 删除联系人（按名称/id 或 `+手机号`） |
+| `tg contact import <文件>` | 从 `.json` / `.csv` 批量导入（`phone,first_name,last_name`） |
+| `tg contact export [文件]` | 导出为可再导入的 JSON（默认输出到终端） |
+| `tg photo-del [--all]` | 删除最近一张头像（`--all` 删除全部） |
+| `tg privacy get [键...]` | 查看隐私设置（默认全部） |
+| `tg privacy set <键> all\|contacts\|nobody` | 修改隐私设置；`--allow 用户` / `--deny 用户` 精细化 |
+| `tg block <用户>` / `tg unblock <用户>` / `tg blocked` | 封锁管理 |
+| `tg folders` | 列出会话文件夹 |
+| `tg folder-create <名称> --chat <会话>...` | 创建文件夹并加入会话 |
+| `tg folder-assign <文件夹> <会话...>` | 向文件夹追加会话 |
+| `tg folder-del <文件夹>` | 删除文件夹 |
+| `tg folder-order <文件夹...>` | 重排文件夹（按想要的顺序全部列出） |
+| `tg accounts` | 列出已配置的账号 |
+| `tg login --account <标签>` | 登录额外账号 |
+| `tg vtr <会话> <消息id>` | 语音转文字（需要 Telegram Premium） |
 
 全局选项：`--account`（v1 仅 default）、`--json`（原始 JSON 输出）。
 退出码：`0` 成功、`1` 命令错误、`2` 配置/连接/会话错误、`130` 中断。

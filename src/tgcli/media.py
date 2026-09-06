@@ -1,9 +1,10 @@
-"""Media commands: dl (download), sf (send file/album), voice, sticker, gif."""
+"""Media commands: dl (download), sf (send file/album), voice, sticker, gif, vtr."""
 
+import asyncio
 import os
 import re
 
-from telethon import functions
+from telethon import functions, types
 
 from .client import run_with_client
 from .output import TgError
@@ -92,6 +93,36 @@ async def cmd_gif(args) -> None:
         print(f"GIF sent (match {idx + 1} of {len(docs)} for {args.query!r})")
 
 
+async def cmd_vtr(args) -> None:
+    async with run_with_client(args) as client:
+        entity = await resolve_chat(client, args.chat)
+        msg = await client.get_messages(entity, ids=args.msg_id)
+        doc = getattr(getattr(msg, "media", None), "document", None)
+        is_voice = any(
+            isinstance(a, types.DocumentAttributeAudio) and a.voice
+            for a in getattr(doc, "attributes", [])
+        )
+        if not is_voice:
+            raise TgError(
+                f"message {args.msg_id} has no voice note",
+                hint=f"check with: tg hist {args.chat} 5",
+            )
+        text, pending = "", True
+        for _ in range(10):
+            res = await client(
+                functions.messages.TranscribeAudioRequest(peer=entity, msg_id=args.msg_id)
+            )
+            text, pending = res.text or "", bool(res.pending)
+            if not pending:
+                break
+            await asyncio.sleep(1.5)
+        if pending:
+            raise TgError("transcription is still processing; try again in a moment")
+        if not text:
+            raise TgError("no transcription returned (Telegram Premium required for this feature)")
+        print(text)
+
+
 def setup(subparsers, common=None) -> None:
     parents = [common] if common else []
     sp = subparsers.add_parser(
@@ -132,3 +163,10 @@ def setup(subparsers, common=None) -> None:
     sp.add_argument("query")
     sp.add_argument("-n", "--index", type=int, default=1, help="send the Nth match (default 1)")
     sp.set_defaults(func=cmd_gif)
+
+    sp = subparsers.add_parser(
+        "vtr", parents=parents, help="Transcribe a voice note (Telegram Premium)"
+    )
+    sp.add_argument("chat")
+    sp.add_argument("msg_id", type=int)
+    sp.set_defaults(func=cmd_vtr)

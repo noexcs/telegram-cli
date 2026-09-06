@@ -18,6 +18,8 @@ no daemon, no external service**. Everything the CLI does lives in the CLI.
   admin promotion with granular rights, slow mode, forum topics, admin log
 - Chat management: archive, mute, edit title / description / photo,
   invite links, clear history
+- Contacts, privacy settings, blocking, dialog folders, multi-account,
+  voice transcription
 - Media: download, send files / albums / voice notes / stickers / GIFs,
   contact cards
 - Chats: list dialogs, history, pinned messages, in-chat & global search,
@@ -144,6 +146,27 @@ tg logout          # remove the session
 | `tg topics <chat>` | List forum topics |
 | `tg topic-create <chat> <title> [text]` | Create a forum topic, optionally with a first message |
 | `tg admin-log <chat> [-n]` | Recent admin actions |
+
+### Contacts, privacy & misc (v4)
+
+| Command | Description |
+|---|---|
+| `tg contact add <user> [name] [--phone]` | Add/update a contact |
+| `tg contact del <user...>` | Delete contacts (by name/id or `+phone`) |
+| `tg contact import <file>` | Bulk import from `.json` / `.csv` (`phone,first_name,last_name`) |
+| `tg contact export [file]` | Export contacts as re-importable JSON (default stdout) |
+| `tg photo-del [--all]` | Delete your most recent profile photo (or all) |
+| `tg privacy get [key...]` | Show privacy settings (default: all) |
+| `tg privacy set <key> all\|contacts\|nobody` | Change a privacy setting; `--allow USER` / `--deny USER` refine it |
+| `tg block <user>` / `tg unblock <user>` / `tg blocked` | Block management |
+| `tg folders` | List dialog folders |
+| `tg folder-create <name> --chat <c>...` | Create a folder with chats |
+| `tg folder-assign <folder> <chat...>` | Add chats to a folder |
+| `tg folder-del <folder>` | Delete a folder |
+| `tg folder-order <folder...>` | Reorder folders (pass all in the wanted order) |
+| `tg accounts` | List configured accounts |
+| `tg login --account <label>` | Log in an additional account |
+| `tg vtr <chat> <msg_id>` | Transcribe a voice note (Telegram Premium required) |
 
 Global flags: `--account` (v1: default only), `--json` (raw JSON output).
 Exit codes: `0` ok, `1` command error, `2` config/connection/session error,

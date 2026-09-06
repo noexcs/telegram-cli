@@ -5,7 +5,7 @@ import re
 import time
 from datetime import datetime
 
-from telethon import functions, types
+from telethon import functions, types, utils
 
 from .client import run_with_client
 from .output import TgError, fmt_date, json_pp
@@ -201,6 +201,93 @@ async def cmd_common_chats(args) -> None:
             print(f"{c.id:>14}  {title}  {'@' + uname if uname else ''}")
 
 
+# ---- dialog folders ----
+
+
+def _filter_title(f) -> str:
+    t = getattr(f, "title", None)
+    return getattr(t, "text", None) or str(t or "?")
+
+
+async def _get_filters(client) -> list:
+    res = await client(functions.messages.GetDialogFiltersRequest())
+    return [f for f in (getattr(res, "filters", None) or []) if isinstance(f, types.DialogFilter)]
+
+
+async def _find_filter(client, spec: str):
+    for f in await _get_filters(client):
+        if str(f.id) == spec or _filter_title(f).lower() == spec.lower():
+            return f
+    raise TgError(f"folder not found: {spec!r}", "list folders with: tg folders")
+
+
+async def cmd_folders(args) -> None:
+    async with run_with_client(args) as client:
+        filters = await _get_filters(client)
+        if args.json:
+            print(json_pp([f.to_dict() for f in filters]))
+            return
+        if not filters:
+            print("(no folders — create one with: tg folder-create <name> --chat <chat>)")
+            return
+        for f in filters:
+            print(f"[{f.id:>2}] {_filter_title(f)}  ({len(f.include_peers)} chats)")
+
+
+async def cmd_folder_create(args) -> None:
+    if not args.chat:
+        raise TgError("pass at least one chat: --chat <chat>")
+    async with run_with_client(args) as client:
+        existing = await _get_filters(client)
+        new_id = max((f.id for f in existing), default=1) + 1
+        peers = [await _input_peer(client, c) for c in args.chat]
+        filt = types.DialogFilter(
+            id=new_id,
+            title=types.TextWithEntities(text=args.name, entities=[]),
+            pinned_peers=[],
+            include_peers=peers,
+            exclude_peers=[],
+        )
+        await client(functions.messages.UpdateDialogFilterRequest(id=new_id, filter=filt))
+        print(f"Folder created: [{new_id}] {args.name} ({len(peers)} chats)")
+
+
+async def cmd_folder_assign(args) -> None:
+    async with run_with_client(args) as client:
+        filt = await _find_filter(client, args.folder)
+        known = {utils.get_peer_id(p) for p in filt.include_peers}
+        added = 0
+        for c in args.chat:
+            peer = await _input_peer(client, c)
+            if utils.get_peer_id(peer) not in known:
+                filt.include_peers.append(peer)
+                added += 1
+        await client(functions.messages.UpdateDialogFilterRequest(id=filt.id, filter=filt))
+        print(f"Added {added} chat(s) to folder [{filt.id}] {_filter_title(filt)}")
+
+
+async def cmd_folder_del(args) -> None:
+    async with run_with_client(args) as client:
+        filt = await _find_filter(client, args.folder)
+        # no filter object with the id = delete the folder
+        await client(functions.messages.UpdateDialogFilterRequest(id=filt.id))
+        print(f"Folder deleted: [{filt.id}] {_filter_title(filt)}")
+
+
+async def cmd_folder_order(args) -> None:
+    async with run_with_client(args) as client:
+        ids = []
+        for spec in args.folder:
+            filt = await _find_filter(client, spec)
+            if filt.id in ids:
+                raise TgError(f"folder {spec!r} listed twice")
+            ids.append(filt.id)
+        all_ids = [f.id for f in await _get_filters(client)]
+        missing = [i for i in all_ids if i not in ids]
+        await client(functions.messages.UpdateDialogFiltersOrderRequest(order=ids + missing))
+        print("Folder order updated: " + " → ".join(str(i) for i in ids))
+
+
 def setup(subparsers, common=None) -> None:
     parents = [common] if common else []
     sp = subparsers.add_parser("archive", parents=parents, help="Archive a chat")
@@ -267,3 +354,32 @@ def setup(subparsers, common=None) -> None:
     )
     sp.add_argument("user")
     sp.set_defaults(func=cmd_common_chats)
+
+    sp = subparsers.add_parser("folders", parents=parents, help="List dialog folders")
+    sp.set_defaults(func=cmd_folders)
+
+    sp = subparsers.add_parser(
+        "folder-create",
+        parents=parents,
+        help='Create a folder, e.g. tg folder-create Work --chat "@boss"',
+    )
+    sp.add_argument("name")
+    sp.add_argument("--chat", action="append", default=[], help="chat to include (repeatable)")
+    sp.set_defaults(func=cmd_folder_create)
+
+    sp = subparsers.add_parser(
+        "folder-assign", parents=parents, help="Add chats to an existing folder"
+    )
+    sp.add_argument("folder", help="folder name or id")
+    sp.add_argument("chat", nargs="+")
+    sp.set_defaults(func=cmd_folder_assign)
+
+    sp = subparsers.add_parser("folder-del", parents=parents, help="Delete a folder")
+    sp.add_argument("folder", help="folder name or id")
+    sp.set_defaults(func=cmd_folder_del)
+
+    sp = subparsers.add_parser(
+        "folder-order", parents=parents, help="Reorder folders (pass all of them in order)"
+    )
+    sp.add_argument("folder", nargs="+", help="folder names/ids in the wanted order")
+    sp.set_defaults(func=cmd_folder_order)
