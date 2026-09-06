@@ -168,6 +168,26 @@ tg logout          # remove the session
 | `tg login --account <label>` | Log in an additional account |
 | `tg vtr <chat> <msg_id>` | Transcribe a voice note (Telegram Premium required) |
 
+### Parity completion (v5)
+
+| Command | Description |
+|---|---|
+| `tg buttons <chat> <msg_id>` | List a message's inline buttons (with press indexes) |
+| `tg press <chat> <msg_id> <idx\|text>` | Press an inline button (shows the bot's answer) |
+| `tg reactions <chat> <msg_id>` | Show reactions (counts + recent reactors) |
+| `tg members <chat> [-n]` | Full member list (recent first) |
+| `tg chat-permissions <chat> [--no-send-stickers …]` | Show/set default member permissions |
+| `tg forum <chat> on\|off` | Enable/disable forum mode |
+| `tg chat-photo-del <chat>` | Remove the group/channel photo |
+| `tg folder-rm <folder> <chat...>` | Remove chats from a folder |
+| `tg upload <file>` | Upload a file without sending (prints id/md5) |
+| `tg search-public <query>` | Search public chats/users by name |
+| `tg resolve <@username>` | Resolve a username to an id |
+| `tg stickers` | List your sticker sets |
+| `tg user-photos <user> [-n]` | List a user's profile photos |
+| `tg bot-info <bot>` | Show a bot's description and commands |
+| `tg bot-commands <cmd> <desc>...` | Set your bot's commands (bot accounts only; `--clear`) |
+
 Global flags: `--account` (v1: default only), `--json` (raw JSON output).
 Exit codes: `0` ok, `1` command error, `2` config/connection/session error,
 `130` interrupted.

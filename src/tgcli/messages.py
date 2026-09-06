@@ -1,6 +1,7 @@
 """Messaging commands: send, reply, edit, del, fwd, poll, schedule, draft,
-reactions, pinning, read state, message links, contact cards."""
+reactions, pinning, read state, message links, contact cards, buttons."""
 
+import contextlib
 import random
 import re
 from datetime import datetime, timedelta
@@ -235,6 +236,82 @@ async def cmd_contact_card(args) -> None:
         print(f"Contact card sent (id: {msg.id})")
 
 
+def _reaction_text(reaction) -> str:
+    if isinstance(reaction, types.ReactionEmoji):
+        return reaction.emoticon
+    if isinstance(reaction, types.ReactionCustomEmoji):
+        return f"custom-emoji:{reaction.document_id}"
+    return str(reaction)
+
+
+async def cmd_buttons(args) -> None:
+    async with run_with_client(args) as client:
+        entity = await resolve_chat(client, args.chat)
+        msg = await client.get_messages(entity, ids=args.msg_id)
+        rows = getattr(msg, "buttons", None)
+        if not rows:
+            raise TgError(f"message {args.msg_id} has no inline buttons")
+        idx = 0
+        for row in rows:
+            cells = []
+            for b in row:
+                kind = "url" if getattr(b, "url", None) else "callback"
+                cells.append(f"[{idx}] {b.text} ({kind})")
+                idx += 1
+            print("  ".join(cells))
+        print(f"\npress one with: tg press {args.chat} {args.msg_id} <index|text>")
+
+
+async def cmd_press(args) -> None:
+    async with run_with_client(args) as client:
+        entity = await resolve_chat(client, args.chat)
+        msg = await client.get_messages(entity, ids=args.msg_id)
+        if not getattr(msg, "buttons", None):
+            raise TgError(f"message {args.msg_id} has no inline buttons")
+        spec = args.button
+        if spec.lstrip("-").isdigit():
+            res = await msg.click(int(spec))
+        else:
+            res = await msg.click(text=spec)
+        answer = getattr(res, "message", None) if res is not None else None
+        alert = bool(getattr(res, "alert", None)) if res is not None else False
+        out = f"Pressed button {spec!r}"
+        if answer:
+            out += f" — bot answered: {answer!r}" + (" (alert)" if alert else "")
+        print(out)
+
+
+async def cmd_reactions(args) -> None:
+    async with run_with_client(args) as client:
+        entity = await resolve_chat(client, args.chat)
+        msg = await client.get_messages(entity, ids=args.msg_id)
+        r = getattr(msg, "reactions", None)
+        # after removing your own reaction the server still returns an
+        # (empty) MessageReactions object instead of None
+        if r is None or not getattr(r, "results", None):
+            print("(no reactions)")
+            return
+        if args.json:
+            print(json_pp(r.to_dict()))
+            return
+        for rc in r.results:
+            chosen = " *" if rc.chosen_order is not None else ""
+            print(f"{_reaction_text(rc.reaction)}  x{rc.count}{chosen}")
+        recent = getattr(r, "recent_reactions", None) or []
+        if recent:
+            print("\nrecent:")
+            for rr in recent:
+                pid = getattr(rr.peer_id, "user_id", None) or rr.peer_id
+                who = str(pid)
+                with contextlib.suppress(Exception):
+                    ent = await client.get_entity(rr.peer_id)
+                    who = (
+                        " ".join(x for x in (ent.first_name, getattr(ent, "last_name", None)) if x)
+                        or f"@{ent.username}"
+                    )
+                print(f"  {_reaction_text(rr.reaction)}  {who}")
+
+
 def setup(subparsers, common=None) -> None:
     parents = [common] if common else []
     sp = subparsers.add_parser(
@@ -363,3 +440,23 @@ def setup(subparsers, common=None) -> None:
     sp.add_argument("name", help='contact name, e.g. "John Doe"')
     sp.add_argument("phone")
     sp.set_defaults(func=cmd_contact_card)
+
+    sp = subparsers.add_parser(
+        "buttons", parents=parents, help="List a message's inline buttons (with press indexes)"
+    )
+    sp.add_argument("chat")
+    sp.add_argument("msg_id", type=int)
+    sp.set_defaults(func=cmd_buttons)
+
+    sp = subparsers.add_parser(
+        "press", parents=parents, help="Press an inline button by index (from `buttons`) or text"
+    )
+    sp.add_argument("chat")
+    sp.add_argument("msg_id", type=int)
+    sp.add_argument("button", help="button index (0-based, from `buttons`) or its text")
+    sp.set_defaults(func=cmd_press)
+
+    sp = subparsers.add_parser("reactions", parents=parents, help="Show reactions on a message")
+    sp.add_argument("chat")
+    sp.add_argument("msg_id", type=int)
+    sp.set_defaults(func=cmd_reactions)

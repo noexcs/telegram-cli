@@ -123,6 +123,19 @@ async def cmd_vtr(args) -> None:
         print(text)
 
 
+async def cmd_upload(args) -> None:
+    path = os.path.expanduser(args.file)
+    if not os.path.exists(path):
+        raise TgError(f"file not found: {path}")
+    async with run_with_client(args) as client:
+        handle = await client.upload_file(path)
+        md5 = getattr(handle, "md5", None)
+        print(f"Uploaded {path}")
+        print(f"  id={handle.id}  parts={handle.parts}  name={handle.name}")
+        if md5:
+            print(f"  md5={md5.hex()}")
+
+
 def setup(subparsers, common=None) -> None:
     parents = [common] if common else []
     sp = subparsers.add_parser(
@@ -170,3 +183,9 @@ def setup(subparsers, common=None) -> None:
     sp.add_argument("chat")
     sp.add_argument("msg_id", type=int)
     sp.set_defaults(func=cmd_vtr)
+
+    sp = subparsers.add_parser(
+        "upload", parents=parents, help="Upload a file to Telegram without sending it"
+    )
+    sp.add_argument("file")
+    sp.set_defaults(func=cmd_upload)

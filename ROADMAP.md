@@ -76,6 +76,32 @@ Chat management:
   `messages.TranscribeAudioRequest` (telethon has no wrapper). Telegram
   Premium is required server-side; free accounts get a clean error
 
+### v5 — MCP parity completion (shipped)
+
+Closes the remaining gap against the chigwell/telegram-mcp 126-tool scope.
+Everything below is now aligned; only the agent-oriented event tools stay
+out of scope.
+
+- ✅ `buttons` / `press` — inline keyboard interaction (press shows the
+  bot's callback answer)
+- ✅ `reactions` — view message reactions (counts + recent reactors)
+- ✅ `members` — full participant list (supergroups paginated via
+  `ChannelParticipantsRecent`; basic groups via `GetFullChat`)
+- ✅ `chat-permissions` — show/set default member rights
+  (`messages.editChatDefaultBannedRights`; flags use
+  `--send-messages/--no-send-messages` pairs)
+- ✅ `search-public` — public chat/user search (`contacts.Search`)
+- ✅ `resolve` — username → id (`contacts.ResolveUsername`)
+- ✅ `forum on|off` — forum mode toggle
+- ✅ `chat-photo-del` — remove group/channel photo (`InputChatPhotoEmpty`)
+- ✅ `stickers` — list installed sticker sets
+- ✅ `user-photos` — list a user's profile photos
+- ✅ `folder-rm` — remove chats from a folder (folders cannot become empty)
+- ✅ `upload` — upload a file without sending
+- ✅ `bot-info` — bot description + commands (`users.GetFullUser`)
+- ✅ `bot-commands` — set own bot's commands (bot accounts only, like
+  telegram-mcp's implementation)
+
 ### Out of scope
 
 - ❌ Agent-oriented event tools (`wait_for_settled_message`, incoming feed

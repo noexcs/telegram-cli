@@ -158,6 +158,26 @@ tg logout          # 退出登录并删除会话
 | `tg login --account <标签>` | 登录额外账号 |
 | `tg vtr <会话> <消息id>` | 语音转文字（需要 Telegram Premium） |
 
+### 对齐补全（v5）
+
+| 命令 | 说明 |
+|---|---|
+| `tg buttons <会话> <消息id>` | 列出消息的内联按钮（带按压序号） |
+| `tg press <会话> <消息id> <序号\|文本>` | 点击内联按钮（显示 bot 应答） |
+| `tg reactions <会话> <消息id>` | 查看消息反应（计数 + 最近反应者） |
+| `tg members <会话> [-n]` | 完整成员列表（最近加入优先） |
+| `tg chat-permissions <会话> [--no-send-stickers …]` | 查看/设置群默认成员权限 |
+| `tg forum <会话> on\|off` | 开启/关闭论坛模式 |
+| `tg chat-photo-del <会话>` | 删除群/频道头像 |
+| `tg folder-rm <文件夹> <会话...>` | 从文件夹移出会话 |
+| `tg upload <文件>` | 上传文件到 Telegram 但不发送（输出 id/md5） |
+| `tg search-public <关键词>` | 按名称搜索公开群组/用户 |
+| `tg resolve <@用户名>` | 把用户名解析为 id（不依赖会话列表） |
+| `tg stickers` | 列出你的贴纸包 |
+| `tg user-photos <用户> [-n]` | 列出用户的头像 |
+| `tg bot-info <bot>` | 查看 bot 的简介与命令 |
+| `tg bot-commands <命令> <描述>...` | 设置自己 bot 的命令（仅 bot 账号；`--clear`） |
+
 全局选项：`--account`（v1 仅 default）、`--json`（原始 JSON 输出）。
 退出码：`0` 成功、`1` 命令错误、`2` 配置/连接/会话错误、`130` 中断。
 

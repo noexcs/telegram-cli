@@ -1,5 +1,6 @@
 """Group administration: create, members, bans, admins, slow mode, topics, admin log."""
 
+import argparse
 import random
 import re
 from datetime import datetime, timedelta, timezone
@@ -427,6 +428,143 @@ async def cmd_admin_log(args) -> None:
             print(f"[{e.id}] {date}  {_display(users, e.user_id)}: {_action_text(e.action)}")
 
 
+# ---- members, default permissions, forum mode, group photo ----
+
+# rights shown by `chat-permissions`; True in ChatBannedRights means banned,
+# so the CLI exposes them as "allowed" flags and inverts when sending
+_PERMISSION_RIGHTS = [
+    "send_messages",
+    "send_media",
+    "send_stickers",
+    "send_gifs",
+    "send_games",
+    "send_inline",
+    "embed_links",
+    "send_polls",
+    "send_photos",
+    "send_videos",
+    "send_roundvideos",
+    "send_audios",
+    "send_voices",
+    "send_docs",
+    "send_plain",
+    "send_reactions",
+    "change_info",
+    "invite_users",
+    "pin_messages",
+    "manage_topics",
+]
+
+# Telegram's out-of-the-box defaults when a chat has no explicit rights set
+_DEFAULT_ALLOWED = {r: not r.startswith(("change_", "pin_", "manage_")) for r in _PERMISSION_RIGHTS}
+
+
+async def cmd_members(args) -> None:
+    async with run_with_client(args) as client:
+        peer = await _peer(client, args.chat)
+        kind = _require_group(peer)
+        rows: list = []
+        users: dict = {}
+        if kind == "channel":
+            want = min(args.n, 1000)
+            offset = 0
+            while len(rows) < want:
+                res = await client(
+                    functions.channels.GetParticipantsRequest(
+                        peer,
+                        types.ChannelParticipantsRecent(),
+                        offset=offset,
+                        limit=min(100, want - len(rows)),
+                        hash=0,
+                    )
+                )
+                rows.extend(res.participants)
+                users.update(_users_by_id(res))
+                if len(res.participants) < 100:
+                    break
+                offset += len(res.participants)
+        else:
+            res = await client(functions.messages.GetFullChatRequest(chat_id=peer.chat_id))
+            rows = list(res.full_chat.participants.participants)
+            users = _users_by_id(res)
+        if args.json:
+            print(json_pp([p.to_dict() for p in rows]))
+            return
+        if not rows:
+            print("(no participants)")
+            return
+        for p in rows:
+            uid = getattr(p, "user_id", None)
+            if uid is None:  # ChannelParticipantBanned wraps a Peer
+                uid = getattr(getattr(p, "peer", None), "user_id", "?")
+            rank = getattr(p, "rank", "") or ""
+            print(f"{uid:>14}  {rank:<12} {_display(users, uid)}")
+
+
+async def cmd_chat_permissions(args) -> None:
+    async with run_with_client(args) as client:
+        peer = await _peer(client, args.chat)
+        ent = await client.get_entity(peer)
+        cur = getattr(ent, "default_banned_rights", None)
+        allowed = {
+            r: (not getattr(cur, r, False)) if cur else _DEFAULT_ALLOWED[r]
+            for r in _PERMISSION_RIGHTS
+        }
+        overrides = {}
+        for r in _PERMISSION_RIGHTS:
+            v = getattr(args, r, None)
+            if v is not None:
+                overrides[r] = v
+                allowed[r] = v
+        if not overrides:
+            banned = [r for r in _PERMISSION_RIGHTS if not allowed[r]]
+            print("current default permissions:")
+            print(
+                "  allowed: " + (", ".join(r for r in _PERMISSION_RIGHTS if allowed[r]) or "(none)")
+            )
+            print("  banned:  " + (", ".join(banned) or "(none)"))
+            return
+        banned_rights = types.ChatBannedRights(
+            until_date=None, view_messages=False, **{r: not allowed[r] for r in _PERMISSION_RIGHTS}
+        )
+        await client(
+            functions.messages.EditChatDefaultBannedRightsRequest(
+                peer=peer, banned_rights=banned_rights
+            )
+        )
+        newly = ", ".join(f"no-{r.replace('_', '-')}" for r, v in overrides.items() if not v)
+        restored = ", ".join(f"{r.replace('_', '-')}" for r, v in overrides.items() if v)
+        msg = "Default permissions updated"
+        if newly:
+            msg += f"; banned: {newly}"
+        if restored:
+            msg += f"; allowed: {restored}"
+        print(msg)
+
+
+async def cmd_forum(args) -> None:
+    if args.state not in ("on", "off"):
+        raise TgError('state must be "on" or "off"')
+    async with run_with_client(args) as client:
+        peer = await _require_channel(await _peer(client, args.chat))
+        await client(functions.channels.ToggleForumRequest(peer, args.state == "on", args.tabs))
+        print(f"Forum mode {'enabled' if args.state == 'on' else 'disabled'}")
+
+
+async def cmd_chat_photo_del(args) -> None:
+    async with run_with_client(args) as client:
+        peer = await _peer(client, args.chat)
+        if _require_group(peer) == "channel":
+            await client(functions.channels.EditPhotoRequest(peer, types.InputChatPhotoEmpty()))
+        else:
+            await client(
+                functions.messages.EditChatPhotoRequest(
+                    chat_id=peer.chat_id, photo=types.InputChatPhotoEmpty()
+                )
+            )
+        print("Chat photo removed")
+
+
 def setup(subparsers, common=None) -> None:
     parents = [common] if common else []
     sp = subparsers.add_parser(
@@ -532,3 +670,35 @@ def setup(subparsers, common=None) -> None:
     sp.add_argument("chat")
     sp.add_argument("-n", type=int, default=20)
     sp.set_defaults(func=cmd_admin_log)
+
+    sp = subparsers.add_parser("members", parents=parents, help="List group members (recent first)")
+    sp.add_argument("chat")
+    sp.add_argument("-n", type=int, default=100, help="max members (default 100)")
+    sp.set_defaults(func=cmd_members)
+
+    sp = subparsers.add_parser(
+        "chat-permissions",
+        parents=parents,
+        help="Show or set default member permissions (--send-messages / --no-send-messages …)",
+    )
+    sp.add_argument("chat")
+    for r in _PERMISSION_RIGHTS:
+        sp.add_argument(
+            f"--{r.replace('_', '-')}",
+            action=argparse.BooleanOptionalAction,
+            default=None,
+            dest=r,
+        )
+    sp.set_defaults(func=cmd_chat_permissions)
+
+    sp = subparsers.add_parser(
+        "forum", parents=parents, help="Enable/disable forum mode: tg forum <chat> on|off"
+    )
+    sp.add_argument("chat")
+    sp.add_argument("state", help="on or off")
+    sp.add_argument("--tabs", action="store_true", help="enable forum tabs (on only)")
+    sp.set_defaults(func=cmd_forum)
+
+    sp = subparsers.add_parser("chat-photo-del", parents=parents, help="Remove the chat photo")
+    sp.add_argument("chat")
+    sp.set_defaults(func=cmd_chat_photo_del)

@@ -6,7 +6,18 @@ import sys
 
 from telethon import errors
 
-from . import __version__, auth, chats, contacts, dialogs, groups, media, messages, resolve
+from . import (
+    __version__,
+    auth,
+    chats,
+    contacts,
+    dialogs,
+    discovery,
+    groups,
+    media,
+    messages,
+    resolve,
+)
 from .output import TgError
 
 
@@ -44,7 +55,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp3 = sub.add_parser("accounts", parents=[common], help="List configured accounts")
     sp3.set_defaults(func=auth.cmd_accounts)
 
-    for mod in (messages, chats, media, dialogs, groups, contacts):
+    for mod in (messages, chats, media, dialogs, groups, contacts, discovery):
         mod.setup(sub, common)
 
     resolve.setup_alias(sub, common)

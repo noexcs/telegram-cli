@@ -266,6 +266,29 @@ async def cmd_folder_assign(args) -> None:
         print(f"Added {added} chat(s) to folder [{filt.id}] {_filter_title(filt)}")
 
 
+async def cmd_folder_rm(args) -> None:
+    async with run_with_client(args) as client:
+        filt = await _find_filter(client, args.folder)
+        wanted = {utils.get_peer_id(await _input_peer(client, c)) for c in args.chat}
+        kept = [p for p in filt.include_peers if utils.get_peer_id(p) not in wanted]
+        removed = len(filt.include_peers) - len(kept)
+        if not removed:
+            raise TgError("none of the given chats are in that folder")
+        # the server rejects filters with an empty include_peers unless they
+        # match by category (contacts/groups/…)
+        if not kept and not any(
+            getattr(filt, f, False)
+            for f in ("contacts", "non_contacts", "groups", "broadcasts", "bots")
+        ):
+            raise TgError(
+                "a folder cannot become empty",
+                "delete it instead: tg folder-del <folder>",
+            )
+        filt.include_peers = kept
+        await client(functions.messages.UpdateDialogFilterRequest(id=filt.id, filter=filt))
+        print(f"Removed {removed} chat(s) from folder [{filt.id}] {_filter_title(filt)}")
+
+
 async def cmd_folder_del(args) -> None:
     async with run_with_client(args) as client:
         filt = await _find_filter(client, args.folder)
@@ -373,6 +396,11 @@ def setup(subparsers, common=None) -> None:
     sp.add_argument("folder", help="folder name or id")
     sp.add_argument("chat", nargs="+")
     sp.set_defaults(func=cmd_folder_assign)
+
+    sp = subparsers.add_parser("folder-rm", parents=parents, help="Remove chats from a folder")
+    sp.add_argument("folder", help="folder name or id")
+    sp.add_argument("chat", nargs="+")
+    sp.set_defaults(func=cmd_folder_rm)
 
     sp = subparsers.add_parser("folder-del", parents=parents, help="Delete a folder")
     sp.add_argument("folder", help="folder name or id")
