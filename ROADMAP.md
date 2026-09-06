@@ -37,16 +37,23 @@ Chat management:
   keep the other side's copy)
 - ✅ `status <user>` / `common-chats <user>` — online status, common chats
 
-### v3 — Group administration
+### v3 — Group administration (shipped)
 
-- 🚧 `new-group <title> <user...>` / `new-channel <title>` — create groups/channels
-- 🚧 `invite <chat> <user...>` / `kick <chat> <user...>` / `leave <chat>`
-- 🚧 `ban <chat> <user> [days]` / `unban <chat> <user>` / `banned <chat>`
-- 🚧 `admins <chat>` / `promote <chat> <user> [--title]` / `demote <chat> <user>` /
+- ✅ `new-group <title> <user...>` / `new-channel <title>` — create groups
+  (`--group` flag makes a supergroup) /channels
+- ✅ `invite <chat> <user...>` / `kick <chat> <user...>` / `leave <chat>`
+  (basic-group kick/leave use `messages.DeleteChatUser`, supergroup kick is a
+  view-messages ban like official clients)
+- ✅ `ban <chat> <user> [days]` / `unban <chat> <user>` / `banned <chat>`
+  (the working participant filter on the current TL layer is
+  `ChannelParticipantsKicked`, not `ChannelParticipantsBanned`)
+- ✅ `admins <chat>` / `promote <chat> <user> [--title]` / `demote <chat> <user>` /
   `admin-rights <chat> <user> ...` — admin management with granular rights
-- 🚧 `slow-mode <chat> [seconds]` — set/disable slow mode
-- 🚧 `topic <chat> ...` — forum topics (list/create)
-- 🚧 `admin-log <chat>` — recent admin actions
+  (basic groups use `messages.EditChatAdmin`, no titles)
+- ✅ `slow-mode <chat> [seconds]` — set/disable slow mode
+- ✅ `topics <chat>` / `topic-create <chat> <title> [text]` — forum topics
+  (list/create)
+- ✅ `admin-log <chat>` — recent admin actions
 
 ### v4 — Contacts, profile & misc
 

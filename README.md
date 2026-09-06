@@ -14,6 +14,8 @@ no daemon, no external service**. Everything the CLI does lives in the CLI.
 - QR-code login (`tg login --qr`) with an independent session
 - Messaging: send / reply / edit / delete / forward / polls / schedule /
   drafts / reactions / pinning
+- Group administration: create groups/channels, invite / kick / ban,
+  admin promotion with granular rights, slow mode, forum topics, admin log
 - Chat management: archive, mute, edit title / description / photo,
   invite links, clear history
 - Media: download, send files / albums / voice notes / stickers / GIFs,
@@ -121,6 +123,27 @@ tg logout          # remove the session
 | `tg clear-history <chat>` | Delete all messages (both sides; `--self-only` keeps the other copy) |
 | `tg status <user>` | Show a user's online status |
 | `tg common-chats <user>` | List chats you share with a user |
+
+### Group administration (v3)
+
+| Command | Description |
+|---|---|
+| `tg new-group <title> <user...>` | Create a basic group with initial members |
+| `tg new-channel <title> [--about text]` | Create a channel; `--group` creates a supergroup |
+| `tg invite <chat> <user...>` | Invite users (supergroups & basic groups) |
+| `tg kick <chat> <user...>` | Remove users (supergroup kick = view-messages ban; `unban` to reverse) |
+| `tg leave <chat>` | Leave a group/channel |
+| `tg ban <chat> <user> [days]` | Ban a user (permanent unless days given); supergroups only |
+| `tg unban <chat> <user>` | Unban a user |
+| `tg banned <chat>` | List banned users (`--json` supported) |
+| `tg admins <chat>` | List admins with ranks |
+| `tg promote <chat> <user> [--title rank]` | Promote with the standard right set |
+| `tg demote <chat> <user>` | Remove admin rights |
+| `tg admin-rights <chat> <user> <flags...>` | Set exact rights: `--change-info --post-messages --edit-messages --delete-messages --ban-users --invite-users --pin-messages --add-admins --anonymous --manage-call --other --manage-topics …`; `--rank` |
+| `tg slow-mode <chat> [seconds]` | Set slow mode (0 = disable); supergroups only |
+| `tg topics <chat>` | List forum topics |
+| `tg topic-create <chat> <title> [text]` | Create a forum topic, optionally with a first message |
+| `tg admin-log <chat> [-n]` | Recent admin actions |
 
 Global flags: `--account` (v1: default only), `--json` (raw JSON output).
 Exit codes: `0` ok, `1` command error, `2` config/connection/session error,

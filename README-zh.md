@@ -13,6 +13,7 @@
 
 - 扫码登录（`tg login --qr`），使用独立会话
 - 消息：发送 / 引用回复 / 编辑 / 删除 / 转发 / 投票 / 定时 / 草稿 / 表情回应 / 置顶
+- 群组管理：建群 / 建频道、邀请 / 踢人 / 封禁、管理员升降级（细粒度权限）、慢速模式、论坛话题、管理日志
 - 聊天管理：归档、免打扰、修改群名 / 简介 / 群头像、邀请链接、清空历史
 - 媒体：下载、发文件 / 相册 / 语音条 / 贴纸 / GIF、发送名片
 - 聊天：会话列表、历史记录、置顶消息、会话内与全局搜索、在线状态、共同群组
@@ -113,6 +114,27 @@ tg logout          # 退出登录并删除会话
 | `tg clear-history <会话>` | 清空聊天记录（双方删除；`--self-only` 仅删自己一侧） |
 | `tg status <用户>` | 查看用户在线状态 |
 | `tg common-chats <用户>` | 列出与该用户的共同群组 |
+
+### 群组管理（v3）
+
+| 命令 | 说明 |
+|---|---|
+| `tg new-group <标题> <用户...>` | 建基本群并拉入初始成员 |
+| `tg new-channel <标题> [--about 简介]` | 建频道；`--group` 建超级群组 |
+| `tg invite <会话> <用户...>` | 邀请用户（超级群组与基本群都支持） |
+| `tg kick <会话> <用户...>` | 移出用户（超级群组的踢人 = 禁言封禁，`unban` 可恢复） |
+| `tg leave <会话>` | 退出群组/频道 |
+| `tg ban <会话> <用户> [天数]` | 封禁（不带天数 = 永久）；仅超级群组 |
+| `tg unban <会话> <用户>` | 解除封禁 |
+| `tg banned <会话>` | 封禁名单（支持 `--json`） |
+| `tg admins <会话>` | 管理员列表（含头衔） |
+| `tg promote <会话> <用户> [--title 头衔]` | 升级为管理员（标准权限集） |
+| `tg demote <会话> <用户>` | 撤销管理员 |
+| `tg admin-rights <会话> <用户> <权限...>` | 设置精确权限：`--change-info --post-messages --edit-messages --delete-messages --ban-users --invite-users --pin-messages --add-admins --anonymous --manage-call --other --manage-topics …`；`--rank` 定头衔 |
+| `tg slow-mode <会话> [秒]` | 设置慢速模式（0 = 关闭）；仅超级群组 |
+| `tg topics <会话>` | 列出论坛话题 |
+| `tg topic-create <会话> <标题> [首条消息]` | 创建论坛话题 |
+| `tg admin-log <会话> [-n]` | 近期管理操作日志 |
 
 全局选项：`--account`（v1 仅 default）、`--json`（原始 JSON 输出）。
 退出码：`0` 成功、`1` 命令错误、`2` 配置/连接/会话错误、`130` 中断。
