@@ -1,7 +1,7 @@
-# tg-cli
+# telegram-userbot-cli
 
 [![CI](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/tg-cli.svg)](https://pypi.org/project/tg-cli/)
+[![PyPI](https://img.shields.io/pypi/v/telegram-userbot-cli.svg)](https://pypi.org/project/telegram-userbot-cli/)
 
 独立 Telegram 命令行客户端。通过 [Telethon](https://github.com/LonamiWebs/Telethon)
 （MTProto userbot）直连 Telegram —— **不依赖 MCP、不依赖守护进程、不依赖任何外部服务**，
@@ -24,7 +24,7 @@
 
 ```bash
 # 从 PyPI 安装
-uv tool install tg-cli          # 或 pipx install tg-cli
+uv tool install telegram-userbot-cli   # 或 pipx install telegram-userbot-cli
 
 # 从源码安装（开发）
 git clone https://github.com/noexcs/telegram-cli.git

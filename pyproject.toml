@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tg-cli"
+name = "telegram-userbot-cli"
 version = "0.1.0"
 description = "Full-featured Telegram command-line client powered by a Telethon userbot (your own account, not a bot token)"
 readme = "README.md"

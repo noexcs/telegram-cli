@@ -1,7 +1,7 @@
-# tg-cli
+# telegram-userbot-cli
 
 [![CI](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/noexcs/telegram-cli/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/tg-cli.svg)](https://pypi.org/project/tg-cli/)
+[![PyPI](https://img.shields.io/pypi/v/telegram-userbot-cli.svg)](https://pypi.org/project/telegram-userbot-cli/)
 
 Standalone Telegram command-line client. Connects directly to Telegram via
 [Telethon](https://github.com/LonamiWebs/Telethon) (MTProto userbot) — **no MCP,
@@ -25,7 +25,7 @@ Requires Python >= 3.10 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 # from PyPI
-uv tool install tg-cli          # or: pipx install tg-cli
+uv tool install telegram-userbot-cli   # or: pipx install telegram-userbot-cli
 
 # from source (development)
 git clone https://github.com/noexcs/telegram-cli.git

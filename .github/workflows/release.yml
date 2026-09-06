@@ -17,7 +17,7 @@ jobs:
         run: uv build
 
       # Requires PyPI Trusted Publishing to be configured once:
-      # PyPI project "tg-cli" → Publishing → Add Trusted Publisher →
+      # PyPI project "telegram-userbot-cli" → Publishing → Add Trusted Publisher →
       # owner=noexcs, repository=telegram-cli, workflow=release.yml.
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
