@@ -14,6 +14,7 @@ from . import (
     dialogs,
     discovery,
     groups,
+    listen,
     media,
     messages,
     resolve,
@@ -55,7 +56,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp3 = sub.add_parser("accounts", parents=[common], help="List configured accounts")
     sp3.set_defaults(func=auth.cmd_accounts)
 
-    for mod in (messages, chats, media, dialogs, groups, contacts, discovery):
+    for mod in (messages, chats, media, dialogs, groups, contacts, discovery, listen):
         mod.setup(sub, common)
 
     resolve.setup_alias(sub, common)

@@ -81,7 +81,7 @@ tg logout          # remove the session
 |---|---|
 | `tg me` | Show your account info |
 | `tg chats [keyword]` | List dialogs; `-t user/group/channel`, `-u` unread, `--archived` |
-| `tg hist <chat> [n]` | Recent messages (default 10) |
+| `tg hist <chat> [n] [--full] [--media]` | Recent messages (default 10); `--full` no text truncation, `--media` only media messages |
 | `tg send <chat> <text...>` | Send a message; `-p md/html` |
 | `tg reply <chat> <msg_id> <text...>` | Reply to a message |
 | `tg edit <chat> <msg_id> <new_text>` | Edit your own message |
@@ -173,7 +173,7 @@ tg logout          # remove the session
 | Command | Description |
 |---|---|
 | `tg buttons <chat> <msg_id>` | List a message's inline buttons (with press indexes) |
-| `tg press <chat> <msg_id> <idx\|text>` | Press an inline button (shows the bot's answer) |
+| `tg press <chat> <msg_id> <text\|idx> [--by-text/--by-index]` | Press an inline button (shows the bot's answer). An **exact button text wins** over a 0-based index, so `tg press … 1` clicks the button labelled "1", not the second button; the flags force one mode |
 | `tg reactions <chat> <msg_id>` | Show reactions (counts + recent reactors) |
 | `tg members <chat> [-n]` | Full member list (recent first) |
 | `tg chat-permissions <chat> [--no-send-stickers …]` | Show/set default member permissions |
@@ -188,9 +188,21 @@ tg logout          # remove the session
 | `tg bot-info <bot>` | Show a bot's description and commands |
 | `tg bot-commands <cmd> <desc>...` | Set your bot's commands (bot accounts only; `--clear`) |
 
+### Live updates
+
+| Command | Description |
+|---|---|
+| `tg listen [chat] [--media] [--once] [--timeout N]` | Stream new messages live (default: all chats). `--media` media only, `--once` exit after the first match, `--timeout` give up after N seconds (exit 3) |
+
+Waiting for a bot's reply/media is: do the requests first, then start
+`tg listen <bot> --media --once --timeout 600` **last**. Telegram pushes
+updates only to the newest connection of a session, so avoid running other
+`tg` commands while `listen` is active — they temporarily take update delivery
+over. (One `tg` invocation = one short-lived connection by design.)
+
 Global flags: `--account` (v1: default only), `--json` (raw JSON output).
 Exit codes: `0` ok, `1` command error, `2` config/connection/session error,
-`130` interrupted.
+`3` listen timeout, `130` interrupted.
 
 ## FAQ
 

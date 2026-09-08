@@ -259,23 +259,53 @@ async def cmd_buttons(args) -> None:
                 cells.append(f"[{idx}] {b.text} ({kind})")
                 idx += 1
             print("  ".join(cells))
-        print(f"\npress one with: tg press {args.chat} {args.msg_id} <index|text>")
+        print(f"press one with: tg press {args.chat} {args.msg_id} <index|text>")
+        print("an exact button text wins over an index (e.g. press ... 1 hits button '1');")
+        print("use --by-index to force an index, or --by-text to force a label")
+
+
+def _flat_buttons(msg) -> list:
+    """All inline buttons of a message as one flat list (row-major)."""
+    return [b for row in (getattr(msg, "buttons", None) or []) for b in row]
+
+
+def _resolve_button_index(msg, spec: str, by_text: bool, by_index: bool) -> int:
+    """Map a press spec to a flat button index.
+
+    Resolution: --by-text forces a label match, --by-index forces a 0-based
+    index; otherwise an *exact button label* wins over a numeric index, so
+    ``press ... 1`` hits the button labelled "1" rather than the second
+    button (numeric search lists like Music Bot's are the common case).
+    """
+    buttons = _flat_buttons(msg)
+    if not buttons:
+        raise TgError(f"message {msg.id} has no inline buttons")
+    labels = [repr(b.text) for b in buttons]
+    if by_text or (not by_index and any(b.text == spec for b in buttons)):
+        for idx, b in enumerate(buttons):
+            if b.text == spec:
+                return idx
+        raise TgError(f"no button labelled {spec!r}", hint="available: " + ", ".join(labels))
+    if not spec.lstrip("-").isdigit():
+        raise TgError(
+            f"no button labelled {spec!r} and it is not a numeric index",
+            hint="available: " + ", ".join(labels),
+        )
+    idx = int(spec)
+    if not 0 <= idx < len(buttons):
+        raise TgError(f"button index {idx} out of range (0..{len(buttons) - 1})")
+    return idx
 
 
 async def cmd_press(args) -> None:
     async with run_with_client(args) as client:
         entity = await resolve_chat(client, args.chat)
         msg = await client.get_messages(entity, ids=args.msg_id)
-        if not getattr(msg, "buttons", None):
-            raise TgError(f"message {args.msg_id} has no inline buttons")
-        spec = args.button
-        if spec.lstrip("-").isdigit():
-            res = await msg.click(int(spec))
-        else:
-            res = await msg.click(text=spec)
+        idx = _resolve_button_index(msg, args.button, args.by_text, args.by_index)
+        res = await msg.click(idx)
         answer = getattr(res, "message", None) if res is not None else None
         alert = bool(getattr(res, "alert", None)) if res is not None else False
-        out = f"Pressed button {spec!r}"
+        out = f"Pressed button {args.button!r} (flat index {idx})"
         if answer:
             out += f" — bot answered: {answer!r}" + (" (alert)" if alert else "")
         print(out)
@@ -449,11 +479,16 @@ def setup(subparsers, common=None) -> None:
     sp.set_defaults(func=cmd_buttons)
 
     sp = subparsers.add_parser(
-        "press", parents=parents, help="Press an inline button by index (from `buttons`) or text"
+        "press",
+        parents=parents,
+        help="Press an inline button by its exact text or 0-based index",
     )
     sp.add_argument("chat")
     sp.add_argument("msg_id", type=int)
-    sp.add_argument("button", help="button index (0-based, from `buttons`) or its text")
+    sp.add_argument("button", help="button text (preferred) or 0-based index from `buttons`")
+    g = sp.add_mutually_exclusive_group()
+    g.add_argument("--by-text", action="store_true", help="force a label match (no index fallback)")
+    g.add_argument("--by-index", action="store_true", help="force a numeric index (no label match)")
     sp.set_defaults(func=cmd_press)
 
     sp = subparsers.add_parser("reactions", parents=parents, help="Show reactions on a message")

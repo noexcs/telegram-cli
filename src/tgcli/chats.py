@@ -97,15 +97,33 @@ def muted_of(d) -> bool:
 async def cmd_hist(args) -> None:
     async with run_with_client(args) as client:
         entity = await resolve_chat(client, args.chat)
-        msgs = await client.get_messages(entity, limit=args.n)
-        if not msgs:
+        collected: list = []
+        # --media filters client-side (one API call can't cover all media kinds);
+        # scan up to 300 messages (or 6x the requested count) to fill the window
+        scan_cap = 300 if args.media else args.n
+        offset_id = 0
+        while len(collected) < args.n and scan_cap > 0:
+            batch = await client.get_messages(
+                entity, limit=min(scan_cap, 50), offset_id=offset_id
+            )
+            if not batch:
+                break
+            offset_id = batch[-1].id
+            scan_cap -= len(batch)
+            for m in batch:
+                if args.media and not getattr(m, "media", None):
+                    continue
+                collected.append(m)
+                if len(collected) >= args.n:
+                    break
+        if not collected:
             print("(no messages)")
             return
         if args.json:
-            print(json_pp([m.to_dict() for m in msgs]))
+            print(json_pp([m.to_dict() for m in collected]))
             return
-        for m in msgs:
-            print(fmt_message_row(m))
+        for m in collected:
+            print(fmt_message_row(m, full=args.full))
 
 
 async def cmd_pinned(args) -> None:
@@ -386,6 +404,12 @@ def setup(subparsers, common=None) -> None:
     )
     sp.add_argument("chat")
     sp.add_argument("n", nargs="?", type=int, default=10, help="count (default 10)")
+    sp.add_argument("--full", action="store_true", help="do not truncate message text")
+    sp.add_argument(
+        "--media",
+        action="store_true",
+        help="only media messages (audio/video/files); scans up to 300 messages",
+    )
     sp.set_defaults(func=cmd_hist)
 
     sp = subparsers.add_parser("pinned", parents=parents, help="Show pinned messages of a chat")
