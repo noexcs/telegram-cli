@@ -75,6 +75,7 @@ async def cmd_listen(args) -> None:
 
         client.add_event_handler(on_message, events.NewMessage())
         if os.environ.get("TGC_DEBUG_LISTEN"):
+
             async def on_raw(update) -> None:
                 print(f"RAW {type(update).__name__}", flush=True)
 

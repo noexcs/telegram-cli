@@ -103,9 +103,7 @@ async def cmd_hist(args) -> None:
         scan_cap = 300 if args.media else args.n
         offset_id = 0
         while len(collected) < args.n and scan_cap > 0:
-            batch = await client.get_messages(
-                entity, limit=min(scan_cap, 50), offset_id=offset_id
-            )
+            batch = await client.get_messages(entity, limit=min(scan_cap, 50), offset_id=offset_id)
             if not batch:
                 break
             offset_id = batch[-1].id
